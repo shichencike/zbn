@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>团队管理系统</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                        success: '#52C41A',
+                        danger: '#FF4D4F'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .modal-backdrop {
+                backdrop-filter: blur(4px);
+            }
+            .transition-modal {
+                transition: all 0.3s ease-in-out;
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark">
+    <!-- 导航栏 -->
+    <nav id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 py-4 bg-dark/70">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="za.html" class="text-white text-2xl font-bold flex items-center">
+                        <i class="fa fa-users mr-2 text-primary"></i>
+                        <span>团队管理系统</span>
+                    </a>
+                </div>
+                
+                <!-- 桌面端导航 -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="za.html" class="text-white hover:text-primary transition-colors">首页</a>
+                    <a href="#team" class="text-white hover:text-primary transition-colors">团队组成</a>
+                    <a href="#members" class="text-white hover:text-primary transition-colors">团队成员</a>
+                    <a href="#statistics" class="text-white hover:text-primary transition-colors">团队统计</a>
+                    <button id="adminBtn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105">
+                        <i class="fa fa-lock mr-1"></i>管理员
+                    </button>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="menuBtn" class="md:hidden text-white text-xl">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="hidden md:hidden bg-dark/95 mt-2 py-4 px-4">
+            <div class="flex flex-col space-y-4">
+                <a href="za.html" class="text-white hover:text-primary transition-colors py-2">首页</a>
+                <a href="#team" class="text-white hover:text-primary transition-colors py-2">团队组成</a>
+                <a href="#members" class="text-white hover:text-primary transition-colors py-2">团队成员</a>
+                <a href="#statistics" class="text-white hover:text-primary transition-colors py-2">团队统计</a>
+                <button id="mobileAdminBtn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-all">
+                    <i class="fa fa-lock mr-1"></i>管理员
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 团队组成部分 -->
+    <section id="team" class="pt-32 pb-20 bg-white">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">我们的团队组成</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">我们拥有一支多元化的专业团队，涵盖开发、设计、策划和测试等多个领域，共同为项目成功保驾护航</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- 开发团队 -->
+                <div class="bg-light rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-code text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">开发团队</h3>
+                    <p class="text-gray-600 mb-4">负责系统开发与实现，保障系统功能稳定运行</p>
+                    <div class="text-lg font-semibold text-primary">
+                        成员数量: <span id="devCountDisplay">0</span>
+                    </div>
+                </div>
+                
+                <!-- 设计团队 -->
+                <div class="bg-light rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-paint-brush text-2xl text-secondary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">设计团队</h3>
+                    <p class="text-gray-600 mb-4">负责用户界面与体验设计，打造优质视觉体验</p>
+                    <div class="text-lg font-semibold text-secondary">
+                        成员数量: <span id="designCountDisplay">0</span>
+                    </div>
+                </div>
+                
+                <!-- 策划团队 -->
+                <div class="bg-light rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-sitemap text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">策划团队</h3>
+                    <p class="text-gray-600 mb-4">负责项目规划与管理，确保项目按时高质量交付</p>
+                    <div class="text-lg font-semibold text-green-600">
+                        成员数量: <span id="planCountDisplay">0</span>
+                    </div>
+                </div>
+                
+                <!-- 测试团队 -->
+                <div class="bg-light rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-check-square-o text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">测试团队</h3>
+                    <p class="text-gray-600 mb-4">负责系统测试与质量保障，提升系统稳定性与可靠性</p>
+                    <div class="text-lg font-semibold text-purple-600">
+                        成员数量: <span id="testCountDisplay">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 团队成员部分 -->
+    <section id="members" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-12">
+                <div>
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">团队成员</h2>
+                    <p class="text-gray-600 max-w-2xl">查看所有团队成员信息，包括姓名、所属部门和职位</p>
+                </div>
+                <button id="addMemberBtn" class="hidden mt-4 md:mt-0 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all transform hover:scale-105">
+                    <i class="fa fa-plus mr-2"></i>添加成员
+                </button>
+            </div>
+            
+            <!-- 成员筛选 -->
+            <div class="mb-8 flex flex-col md:flex-row gap-4">
+                <div class="w-full md:w-1/4">
+                    <select id="teamFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors">
+                        <option value="all">所有团队</option>
+                        <option value="dev">开发团队</option>
+                        <option value="design">设计团队</option>
+                        <option value="plan">策划团队</option>
+                        <option value="test">测试团队</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-3/4">
+                    <div class="relative">
+                        <input type="text" id="searchMembers" placeholder="搜索成员..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors">
+                        <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 成员列表 -->
+            <div id="membersList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- 成员卡片将通过JavaScript动态生成 -->
+            </div>
+            
+            <!-- 空状态提示 -->
+            <div id="emptyMembers" class="hidden text-center py-16">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-user-o text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-medium mb-2">暂无团队成员</h3>
+                <p class="text-gray-500 mb-6">请添加团队成员信息</p>
+                <button id="addFirstMemberBtn" class="hidden bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all">
+                    <i class="fa fa-plus mr-2"></i>添加第一个成员
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 团队统计部分 -->
+    <section id="statistics" class="py-20 bg-white">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">团队规模统计</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">实时掌握团队规模变化，合理分配资源，优化团队结构</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-6 md:p-8">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                        <h3 class="text-xl font-bold mb-4 md:mb-0">当前团队总人数</h3>
+                        <span id="totalTeamCount" class="text-4xl font-bold text-primary">0</span>
+                    </div>
+                    
+                    <!-- 团队组成图表 -->
+                    <div class="mb-8">
+                        <canvas id="teamChart" height="300"></canvas>
+                    </div>
+                    
+                    <!-- 团队详细统计 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-light p-4 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">开发团队占比</span>
+                                <span id="devPercentage" class="font-semibold text-primary">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                <div id="devProgress" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light p-4 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">设计团队占比</span>
+                                <span id="designPercentage" class="font-semibold text-secondary">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                <div id="designProgress" class="bg-secondary h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light p-4 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">策划团队占比</span>
+                                <span id="planPercentage" class="font-semibold text-green-600">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                <div id="planProgress" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light p-4 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">测试团队占比</span>
+                                <span id="testPercentage" class="font-semibold text-purple-600">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                <div id="testProgress" class="bg-purple-600 h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 管理员编辑按钮 -->
+                    <div class="mt-8 text-center">
+                        <button id="editTeamBtn" class="hidden bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all transform hover:scale-105">
+                            <i class="fa fa-pencil mr-2"></i>编辑团队规模
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="text-xl font-bold flex items-center">
+                        <i class="fa fa-users mr-2 text-primary"></i>
+                        <span>团队管理系统</span>
+                    </div>
+                    <p class="text-gray-400 mt-2">高效管理团队，提升协作效率</p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-github text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-twitter text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-linkedin text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 团队管理系统. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 管理员登录模态框 -->
+    <div id="adminModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 modal-backdrop">
+        <div id="modalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 scale-95 opacity-0 transition-modal">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">管理员登录</h3>
+                    <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="mb-4">
+                        <label for="username" class="block text-gray-700 mb-2">用户名</label>
+                        <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" placeholder="请输入用户名" required>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-700 mb-2">密码</label>
+                        <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" placeholder="请输入密码" required>
+                    </div>
+                    
+                    <div id="loginError" class="hidden mb-4 p-3 bg-danger/10 text-danger rounded-lg">
+                        <i class="fa fa-exclamation-circle mr-2"></i>用户名或密码错误，请重试
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg transition-colors font-medium">
+                        登录
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑团队规模模态框 -->
+    <div id="editSizeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 modal-backdrop">
+        <div id="editSizeModalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 scale-95 opacity-0 transition-modal">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">编辑团队规模</h3>
+                    <button id="closeSizeModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="editSizeForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label for="devCount" class="block text-gray-700 mb-2">开发团队人数</label>
+                            <input type="number" id="devCount" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" required>
+                        </div>
+                        
+                        <div>
+                            <label for="designCount" class="block text-gray-700 mb-2">设计团队人数</label>
+                            <input type="number" id="designCount" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" required>
+                        </div>
+                        
+                        <div>
+                            <label for="planCount" class="block text-gray-700 mb-2">策划团队人数</label>
+                            <input type="number" id="planCount" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" required>
+                        </div>
+                        
+                        <div>
+                            <label for="testCount" class="block text-gray-700 mb-2">测试团队人数</label>
+                            <input type="number" id="testCount" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" required>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-light p-4 rounded-lg mb-6">
+                        <div class="flex justify-between items-center font-medium">
+                            <span>团队总人数</span>
+                            <span id="totalCountDisplay" class="text-primary font-bold">0</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg transition-colors font-medium">
+                        保存更改
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加成员模态框 -->
+    <div id="addMemberModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 modal-backdrop">
+        <div id="addMemberModalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 scale-95 opacity-0 transition-modal">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">添加团队成员</h3>
+                    <button id="closeMemberModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="addMemberForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="memberName" class="block text-gray-700 mb-2">姓名</label>
+                            <input type="text" id="memberName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" placeholder="请输入成员姓名" required>
+                        </div>
+                        
+                        <div>
+                            <label for="memberTeam" class="block text-gray-700 mb-2">所属团队</label>
+                            <select id="memberTeam" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" required>
+                                <option value="">请选择团队</option>
+                                <option value="dev">开发团队</option>
+                                <option value="design">设计团队</option>
+                                <option value="plan">策划团队</option>
+                                <option value="test">测试团队</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="memberPosition" class="block text-gray-700 mb-2">职位</label>
+                        <input type="text" id="memberPosition" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" placeholder="请输入成员职位" required>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="memberEmail" class="block text-gray-700 mb-2">邮箱</label>
+                        <input type="email" id="memberEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" placeholder="请输入成员邮箱">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg transition-colors font-medium">
+                        添加成员
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Chart.js用于图表展示 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- 主JavaScript代码 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 导航栏滚动效果
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('py-2', 'bg-dark/90');
+                    navbar.classList.remove('py-4', 'bg-dark/70');
+                } else {
+                    navbar.classList.add('py-4', 'bg-dark/70');
+                    navbar.classList.remove('py-2', 'bg-dark/90');
+                }
+            });
+
+            // 移动端菜单切换
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            menuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+                const icon = menuBtn.querySelector('i');
+                if (mobileMenu.classList.contains('hidden')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
+            });
+
+            // 管理员登录模态框
+            const adminModal = document.getElementById('adminModal');
+            const modalContent = document.getElementById('modalContent');
+            const adminBtn = document.getElementById('adminBtn');
+            const mobileAdminBtn = document.getElementById('mobileAdminBtn');
+            const closeLoginModal = document.getElementById('closeLoginModal');
+            const loginForm = document.getElementById('loginForm');
+            const loginError = document.getElementById('loginError');
+            const editTeamBtn = document.getElementById('editTeamBtn');
+            const addMemberBtn = document.getElementById('addMemberBtn');
+            const addFirstMemberBtn = document.getElementById('addFirstMemberBtn');
+            
+            // 打开登录模态框
+            function openModal(modal, content) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+            
+            // 关闭模态框
+            function closeModal(modal, content) {
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+            
+            adminBtn.addEventListener('click', () => openModal(adminModal, modalContent));
+            mobileAdminBtn.addEventListener('click', () => openModal(adminModal, modalContent));
+            closeLoginModal.addEventListener('click', () => closeModal(adminModal, modalContent));
+            
+            // 点击模态框外部关闭
+            adminModal.addEventListener('click', (e) => {
+                if (e.target === adminModal) closeModal(adminModal, modalContent);
+            });
+
+            // 登录处理
+            let isAdminLoggedIn = false;
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // 简单的管理员验证
+                if (username === 'admin' && password === 'admin123') {
+                    isAdminLoggedIn = true;
+                    editTeamBtn.classList.remove('hidden');
+                    addMemberBtn.classList.remove('hidden');
+                    addFirstMemberBtn.classList.remove('hidden');
+                    closeModal(adminModal, modalContent);
+                    alert('登录成功，您已获得管理员权限');
+                    renderMembers(); // 重新渲染成员列表，显示删除按钮
+                } else {
+                    loginError.classList.remove('hidden');
+                    setTimeout(() => loginError.classList.add('hidden'), 3000);
+                }
+            });
+
+            // 团队规模编辑模态框
+            const editSizeModal = document.getElementById('editSizeModal');
+            const editSizeModalContent = document.getElementById('editSizeModalContent');
+            const closeSizeModal = document.getElementById('closeSizeModal');
+            const editSizeForm = document.getElementById('editSizeForm');
+            
+            editTeamBtn.addEventListener('click', () => {
+                if (!isAdminLoggedIn) {
+                    alert('请先登录管理员账号');
+                    return;
+                }
+                openModal(editSizeModal, editSizeModalContent);
+            });
+            
+            closeSizeModal.addEventListener('click', () => closeModal(editSizeModal, editSizeModalContent));
+            editSizeModal.addEventListener('click', (e) => {
+                if (e.target === editSizeModal) closeModal(editSizeModal, editSizeModalContent);
+            });
+
+            // 添加成员模态框
+            const addMemberModal = document.getElementById('addMemberModal');
+            const addMemberModalContent = document.getElementById('addMemberModalContent');
+            const closeMemberModal = document.getElementById('closeMemberModal');
+            const addMemberForm = document.getElementById('addMemberForm');
+            
+            addMemberBtn.addEventListener('click', () => openModal(addMemberModal, addMemberModalContent));
+            addFirstMemberBtn.addEventListener('click', () => openModal(addMemberModal, addMemberModalContent));
+            closeMemberModal.addEventListener('click', () => closeModal(addMemberModal, addMemberModalContent));
+            addMemberModal.addEventListener('click', (e) => {
+                if (e.target === addMemberModal) closeModal(addMemberModal, addMemberModalContent);
+            });
+
+            // 初始化图表
+            let teamChart;
+            function initChart(dev, design, plan, test) {
+                const ctx = document.getElementById('teamChart').getContext('2d');
+                
+                // 如果图表已存在，先销毁
+                if (teamChart) {
+                    teamChart.destroy();
+                }
+                
+                teamChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['开发团队', '设计团队', '策划团队', '测试团队'],
+                        datasets: [{
+                            data: [dev, design, plan, test],
+                            backgroundColor: [
+                                '#165DFF',
+                                '#36CFC9',
+                                '#52C41A',
+                                '#9254DE'
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                        return `${label}: ${value} 人 (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
+                        },
+                        cutout: '65%'
+                    }
+                });
+            }
+
+            // 更新进度条和百分比
+            function updateProgressBars(dev, design, plan, test) {
+                const total = dev + design + plan + test;
+                
+                if (total > 0) {
+                    const devPercent = Math.round((dev / total) * 100);
+                    const designPercent = Math.round((design / total) * 100);
+                    const planPercent = Math.round((plan / total) * 100);
+                    const testPercent = Math.round((test / total) * 100);
+                    
+                    // 更新百分比文本
+                    document.getElementById('devPercentage').textContent = `${devPercent}%`;
+                    document.getElementById('designPercentage').textContent = `${designPercent}%`;
+                    document.getElementById('planPercentage').textContent = `${planPercent}%`;
+                    document.getElementById('testPercentage').textContent = `${testPercent}%`;
+                    
+                    // 更新进度条宽度，添加动画效果
+                    setTimeout(() => {
+                        document.getElementById('devProgress').style.width = `${devPercent}%`;
+                        document.getElementById('designProgress').style.width = `${designPercent}%`;
+                        document.getElementById('planProgress').style.width = `${planPercent}%`;
+                        document.getElementById('testProgress').style.width = `${testPercent}%`;
+                    }, 100);
+                }
+            }
+
+            // 团队规模表单提交
+            editSizeForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const devCount = parseInt(document.getElementById('devCount').value) || 0;
+                const designCount = parseInt(document.getElementById('designCount').value) || 0;
+                const planCount = parseInt(document.getElementById('planCount').value) || 0;
+                const testCount = parseInt(document.getElementById('testCount').value) || 0;
+                const total = devCount + designCount + planCount + testCount;
+                
+                // 更新显示
+                document.getElementById('devCountDisplay').textContent = devCount;
+                document.getElementById('designCountDisplay').textContent = designCount;
+                document.getElementById('planCountDisplay').textContent = planCount;
+                document.getElementById('testCountDisplay').textContent = testCount;
+                document.getElementById('totalCountDisplay').textContent = total;
+                document.getElementById('totalTeamCount').textContent = total;
+                
+                // 更新图表和进度条
+                initChart(devCount, designCount, planCount, testCount);
+                updateProgressBars(devCount, designCount, planCount, testCount);
+                
+                // 关闭模态框
+                closeModal(editSizeModal, editSizeModalContent);
+                alert('团队规模已更新');
+            });
+
+            // 计算总人数
+            const teamInputs = ['devCount', 'designCount', 'planCount', 'testCount'];
+            teamInputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    let total = 0;
+                    teamInputs.forEach(inputId => {
+                        total += parseInt(document.getElementById(inputId).value) || 0;
+                    });
+                    document.getElementById('totalCountDisplay').textContent = total;
+                });
+            });
+
+            // 获取成员数据
+            async function fetchMembers() {
+                try {
+                    const response = await fetch('member_handler.php');
+                    const result = await response.json();
+                    if (result.success) {
+                        return result.data;
+                    }
+                    return [];
+                } catch (error) {
+                    console.error('获取成员数据失败:', error);
+                    return [];
+                }
+            }
+
+            // 添加成员
+            async function addMember(memberData) {
+                try {
+                    const response = await fetch('member_handler.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(memberData)
+                    });
+                    const result = await response.json();
+                    return result.success;
+                } catch (error) {
+                    console.error('添加成员失败:', error);
+                    return false;
+                }
+            }
+
+            // 删除成员
+            async function deleteMember(id) {
+                try {
+                    const response = await fetch(`member_handler.php?id=${id}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    return result.success;
+                } catch (error) {
+                    console.error('删除成员失败:', error);
+                    return false;
+                }
+            }
+
+            // 渲染成员列表
+            async function renderMembers() {
+                const membersList = document.getElementById('membersList');
+                const emptyMembers = document.getElementById('emptyMembers');
+                const members = await fetchMembers();
+                const teamFilter = document.getElementById('teamFilter').value;
+                const searchTerm = document.getElementById('searchMembers').value.toLowerCase();
+                
+                // 筛选成员
+                let filteredMembers = members;
+                
+                // 按团队筛选
+                if (teamFilter !== 'all') {
+                    filteredMembers = filteredMembers.filter(member => member.team === teamFilter);
+                }
+                
+                // 按搜索词筛选
+                if (searchTerm) {
+                    filteredMembers = filteredMembers.filter(member => 
+                        member.name.toLowerCase().includes(searchTerm) ||
+                        member.position.toLowerCase().includes(searchTerm) ||
+                        (member.email && member.email.toLowerCase().includes(searchTerm))
+                    );
+                }
+                
+                // 清空现有列表
+                membersList.innerHTML = '';
+                
+                if (filteredMembers.length === 0) {
+                    membersList.classList.add('hidden');
+                    emptyMembers.classList.remove('hidden');
+                    return;
+                }
+                
+                membersList.classList.remove('hidden');
+                emptyMembers.classList.add('hidden');
+                
+                // 生成成员卡片
+                filteredMembers.forEach(member => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-xl shadow-md overflow-hidden card-hover';
+                    card.innerHTML = `
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-xl font-bold">${member.name}</h3>
+                                ${isAdminLoggedIn ? `
+                                    <button class="delete-member text-gray-400 hover:text-danger transition-colors" data-id="${member.id}">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <p class="text-gray-600 mb-2">
+                                <i class="fa fa-briefcase mr-2 text-primary"></i>${member.position}
+                            </p>
+                            <p class="text-gray-600 mb-4">
+                                <i class="fa fa-users mr-2 text-primary"></i>${getTeamName(member.team)}
+                            </p>
+                            ${member.email ? `
+                                <p class="text-gray-600">
+                                    <i class="fa fa-envelope mr-2 text-primary"></i>${member.email}
+                                </p>
+                            ` : ''}
+                        </div>
+                    `;
+                    membersList.appendChild(card);
+                });
+                
+                // 添加删除事件监听
+                document.querySelectorAll('.delete-member').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const id = this.getAttribute('data-id');
+                        if (confirm('确定要删除这个成员吗？')) {
+                            const success = await deleteMember(id);
+                            if (success) {
+                                renderMembers();
+                            } else {
+                                alert('删除失败，请重试');
+                            }
+                        }
+                    });
+                });
+            }
+
+            // 获取团队名称
+            function getTeamName(teamCode) {
+                const teams = {
+                    'dev': '开发团队',
+                    'design': '设计团队',
+                    'plan': '策划团队',
+                    'test': '测试团队'
+                };
+                return teams[teamCode] || teamCode;
+            }
+
+            // 添加成员表单提交事件
+            addMemberForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!isAdminLoggedIn) {
+                    alert('请先登录管理员账号');
+                    return;
+                }
+                
+                const memberData = {
+                    name: document.getElementById('memberName').value,
+                    team: document.getElementById('memberTeam').value,
+                    position: document.getElementById('memberPosition').value,
+                    email: document.getElementById('memberEmail').value
+                };
+                
+                const success = await addMember(memberData);
+                if (success) {
+                    // 重置表单
+                    this.reset();
+                    // 关闭模态框
+                    closeModal(addMemberModal, addMemberModalContent);
+                    // 重新渲染成员列表
+                    renderMembers();
+                    alert('成员添加成功');
+                } else {
+                    alert('添加失败，请重试');
+                }
+            });
+
+            // 筛选和搜索事件
+            document.getElementById('teamFilter').addEventListener('change', renderMembers);
+            document.getElementById('searchMembers').addEventListener('input', renderMembers);
+
+            // 页面加载时初始化
+            async function init() {
+                // 渲染成员列表
+                renderMembers();
+                
+                // 初始化图表和进度条（默认值）
+                const defaultCounts = { dev: 0, design: 0, plan: 0, test: 0 };
+                initChart(defaultCounts.dev, defaultCounts.design, defaultCounts.plan, defaultCounts.test);
+                updateProgressBars(defaultCounts.dev, defaultCounts.design, defaultCounts.plan, defaultCounts.test);
+                
+                // 设置初始值
+                document.getElementById('devCount').value = defaultCounts.dev;
+                document.getElementById('designCount').value = defaultCounts.design;
+                document.getElementById('planCount').value = defaultCounts.plan;
+                document.getElementById('testCount').value = defaultCounts.test;
+                document.getElementById('totalCountDisplay').textContent = 
+                    defaultCounts.dev + defaultCounts.design + defaultCounts.plan + defaultCounts.test;
+                document.getElementById('totalTeamCount').textContent = 
+                    defaultCounts.dev + defaultCounts.design + defaultCounts.plan + defaultCounts.test;
+                document.getElementById('devCountDisplay').textContent = defaultCounts.dev;
+                document.getElementById('designCountDisplay').textContent = defaultCounts.design;
+                document.getElementById('planCountDisplay').textContent = defaultCounts.plan;
+                document.getElementById('testCountDisplay').textContent = defaultCounts.test;
+            }
+
+            // 初始化页面
+            init();
+        });
+    </script>
+</body>
+</html>
